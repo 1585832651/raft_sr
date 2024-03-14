@@ -336,7 +336,6 @@ class EfficientViT(torch.nn.Module):
         return {x for x in self.state_dict().keys() if 'attention_biases' in x}
 
     def forward(self, x):  
-        print (x.device)
         x = self.patch_embed(x)     #out torch.Size([2, 128, 56, 128])
         x = self.blocks1(x)   
         x = self.blocks2(x)       

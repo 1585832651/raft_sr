@@ -37,7 +37,6 @@ class RAFT(nn.Module):
     def forward(self, stereo_imgs,h_pad = None,w_pad =None):
        # N, _, H, W = left_img.shape
         # assert stereo_imgs.shape(1) == 6 # "输入的通道数必须是6，表示两张RGB图像"
-        print("stereo_imgs.device",stereo_imgs.device)
         upsampled_stereos_list = []
         N, _, H, W = stereo_imgs.shape
         # 分割成左右视图
@@ -46,7 +45,6 @@ class RAFT(nn.Module):
 
         stereo_imgs = torch.cat((left_img, right_img), dim=0)
         stereo_imgs_upsampled = F.interpolate(stereo_imgs, scale_factor=8, mode='bilinear', align_corners=True)
-        print("stereo_imgs_upsampled.device",stereo_imgs_upsampled.device)
         stereo_features = self.backbone(stereo_imgs_upsampled)  
         stereo_context = self.context(stereo_imgs_upsampled)
 

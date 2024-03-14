@@ -26,7 +26,7 @@ class RaftRestorationModel(BaseModel):
 
     def __init__(self, opt):
         super(RaftRestorationModel, self).__init__(opt)
-
+        
         # define network
         self.net_g = define_network(deepcopy(opt['network_g']))
         # call model_to_device only at training stage
@@ -202,7 +202,7 @@ class RaftRestorationModel(BaseModel):
         if self.opt['train'].get('mixup', False):
             self.mixup_aug()
 
-        preds = self.net_g(self.lq)[0]
+        preds = self.net_g(self.lq)
         if not isinstance(preds, list):
             preds = [preds]
 
@@ -213,10 +213,12 @@ class RaftRestorationModel(BaseModel):
         # pixel loss
         if self.cri_pix:
             l_pix = 0.
-            for pred in preds:
-                l_pix += self.cri_pix(pred, self.gt)
+            n_preds = len(preds)  # 获取预测的数量
+            weights = [i / sum(range(1, n_preds + 1)) for i in range(1, n_preds + 1)]  # 生成权重列表
 
-            # print('l pix ... ', l_pix)
+            for i, pred in enumerate(preds):
+                l_pix += self.cri_pix(pred, self.gt) * weights[i]  # 应用权重
+
             l_total += l_pix
             loss_dict['l_pix'] = l_pix
 
@@ -267,34 +269,33 @@ class RaftRestorationModel(BaseModel):
 # 假设 self.net_g 是您的模型, self.lq 是一个包含图像的张量列表
 # i, j 用于指定当前处理的图像批次
                 current_batch = self.lq[i:j]
-                if current_batch.shape == torch.Size([1, 6, 624, 504]):
-                    import pdb; pdb.set_trace()
-                    print("当前数据形状为[1, 6, 624, 504]，转移到CPU执行")
-                    # 将模型移至CPU
-                    self.net_g = self.net_g.cpu()
-                    # for param in net_g_cpu.parameters():
-                    #     print(param.device.type)
-                    # for buffer in net_g_cpu.buffers():
-                    #     print(buffer.device.type)
+    #             if current_batch.shape == torch.Size([1, 6, 624, 504]):
+    #                 import pdb; pdb.set_trace()
+    #                 print("当前数据形状为[1, 6, 624, 504]转移到CPU执行")
+    #                 # 将模型移至CPU
+    #                 self.net_g.cpu()
+    #                 # for param in net_g_cpu.parameters():
+    #                 #     print(param.device.type)
+    #                 # for buffer in net_g_cpu.buffers():
+    #                 #     print(buffer.device.type)
 
-    # 将数据深度复制到CPU，并使用新变量存储复制后的数据
-                    current_batch_cpu = self.lq[i:j].cpu()
+    # # 将数据深度复制到CPU，并使用新变量存储复制后的数据
+    #                 current_batch.cpu()
     
-                    # 如果h_pad和w_pad是张量，也需要转移它们到CPU
-                    h_pad_cpu = self.h_pad.cpu() if torch.is_tensor(self.h_pad) else self.h_pad
-                    w_pad_cpu = self.w_pad.cpu() if torch.is_tensor(self.w_pad) else self.w_pad
+    #                 # 如果h_pad和w_pad是张量，也需要转移它们到CPU
+    #                 h_pad_cpu = self.h_pad.cpu() if torch.is_tensor(self.h_pad) else self.h_pad
+    #                 w_pad_cpu = self.w_pad.cpu() if torch.is_tensor(self.w_pad) else self.w_pad
                     
-                    # 在CPU上执行前向传播
-                    print("current_batch type after moving to cpu:", current_batch_cpu.device)
-                    pred = net_g_cpu(current_batch_cpu, h_pad_cpu, w_pad_cpu)[0]
-                    print("done:", len(pred))
-                    # 如果需要，将模型移回GPU
-
+    #                 # 在CPU上执行前向传播
+    #                 print("current_batch type after moving to cpu:", current_batch.device)
+    #                 pred = self.net_g(current_batch, h_pad_cpu, w_pad_cpu)[0]
+    #                 print("done:", len(pred))
+    #                 # 如果需要，将模型移回GPU
                 
-                else:
-                    import pdb; pdb.set_trace()
-                    self.net_g = self.net_g.cuda()                    
-                    pred = self.net_g(self.lq[i:j], self.h_pad, self.w_pad)[0]
+    #             else:
+                self.h_pad = self.h_pad
+                self.w_pad = self.w_pad     
+                pred = self.net_g( self.lq[i:j], self.h_pad, self.w_pad)
 
                 if isinstance(pred, list):
                     pred = pred[-1]
