@@ -67,17 +67,19 @@ class BaseModel():
         Args:
             net (nn.Module)
         """
-
-        net = net.to(self.device)
-        if self.opt['dist']:
-            find_unused_parameters = self.opt.get('find_unused_parameters',
-                                                  False)
-            net = DistributedDataParallel(
-                net,
-                device_ids=[torch.cuda.current_device()],
-                find_unused_parameters=find_unused_parameters)
-        elif self.opt['num_gpu'] > 1:
-            net = DataParallel(net)
+#        net = net.to(self.device)
+#        if self.opt['dist']:
+#            print('dist')
+#            find_unused_parameters = self.opt.get('find_unused_parameters',
+#                                                  False)
+#            net = DistributedDataParallel(
+#                net,
+#                device_ids=[torch.cuda.current_device()],
+#                find_unused_parameters=find_unused_parameters)
+#        elif self.opt['num_gpu'] > 1:
+#            print('dp')
+#            
+#            net = DataParallel(net)
         return net
 
     def setup_schedulers(self):

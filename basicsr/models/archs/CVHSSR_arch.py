@@ -570,7 +570,7 @@ class CHIMB(nn.Module):  # GFDN
 
     def forward(self, inp):
         x = inp
-
+        print("inp.shape",inp.shape)
         x = self.norm1(x)
 
         x = self.conv1(x)
@@ -661,6 +661,7 @@ class CVHSR(nn.Module):
         feats = self.body(*feats)
         out = torch.cat([self.up(x) for x in feats], dim=1)
         out = out + inp_hr
+        print("out.shape",out.shape)
         return out
 
 
@@ -683,18 +684,19 @@ if __name__ == '__main__':
     droppath = 0
     train_size = (1, 6, 30, 90)
 
-    net = LKAGSSR(up_scale=4, train_size=train_size, fast_imp=True, width=width, num_blks=num_blks,
+    net = CVHSSR(up_scale=4, train_size=train_size, fast_imp=True, width=width, num_blks=num_blks,
                   drop_path_rate=droppath)
 
-    inp_shape = (6, 30, 90)
+    inp_shape = torch.randn(32,6, 30, 90)
 
-    from ptflops import get_model_complexity_info
+    out = net(inp_shape)
+    # from ptflops import get_model_complexity_info
 
-    FLOPS = 0
-    macs, params = get_model_complexity_info(net, inp_shape, verbose=False, print_per_layer_stat=True)
+    # FLOPS = 0
+    # macs, params = get_model_complexity_info(net, inp_shape, verbose=False, print_per_layer_stat=True)
 
-    # params = float(params[:-4])
-    print(params)
-    macs = float(macs[:-4]) + FLOPS / 10 ** 9
+    # # params = float(params[:-4])
+    # print(params)
+    # macs = float(macs[:-4]) + FLOPS / 10 ** 9
 
-    print('mac', macs, params)
+    # print('mac', macs, params)

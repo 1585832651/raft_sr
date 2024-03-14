@@ -7,7 +7,18 @@
 import logging
 import torch
 from os import path as osp
+import sys
+import os
+# 假设`basicsr`位于你的项目根目录下
+project_root = '/root/autodl-tmp/CVHSSR/'  # 更改为你的项目根目录路径
+sys.path.append(os.path.abspath(project_root))
+project_root1 = '/root/autodl-tmp/CVHSSR/basicsr/models/archs'
+project_root2 = '/root/autodl-tmp/CVHSSR/basicsr'
+project_root3 = '/root/autodl-tmp/CVHSSR/basicsr/models'
 
+sys.path.append(os.path.abspath(project_root1))
+sys.path.append(os.path.abspath(project_root2))
+sys.path.append(os.path.abspath(project_root3))
 from basicsr.data import create_dataloader, create_dataset
 from basicsr.models import create_model
 from basicsr.train import parse_options
